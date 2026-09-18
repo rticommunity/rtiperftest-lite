@@ -1,0 +1,45 @@
+/*
+ * Copyright (c) 2026 Real-Time Innovations, Inc.
+ * Subject to the Eclipse Public License v1.0; see LICENSE.md for details.
+ */
+
+/*
+ * Perftest Lite IDL - Zero Copy v2 variant.
+ *
+ * Uses a fixed-size array for bin_data so RTI Connext DDS Micro Zero Copy v2
+ * can operate on contiguous memory without serialization. The
+ * @transfer_mode(SHMEM_REF) annotation instructs rtiddsgen to emit the
+ * Zero Copy-aware type plugin support.
+ *
+ * Key differences from the sequence variant:
+ * - bin_data is a fixed array derived from the reported sample size.
+ * - the bin_data array itself is never filled or inspected.
+ * - sequences and strings are forbidden by Micro Zero Copy v2.
+ *
+ * IMPORTANT: type name (PerftestType) and enum values are identical to the
+ * sequence variant so that middleware and core include the same generated
+ * symbols regardless of the selected IDL.
+ */
+
+#ifndef PERFTEST_TYPE_CONFIGURED_DATALEN
+#define PERFTEST_TYPE_CONFIGURED_DATALEN 64028
+#endif
+const long PERFTEST_TYPE_OVERHEAD = 28;
+const long PERFTEST_TYPE_DATALEN = PERFTEST_TYPE_CONFIGURED_DATALEN;
+const long PERFTEST_TYPE_MAX_PAYLOAD =
+    PERFTEST_TYPE_DATALEN - PERFTEST_TYPE_OVERHEAD;
+
+enum PerftestKind {
+    PERFTEST_KIND_DATA,
+    PERFTEST_KIND_DATA_PING,
+    PERFTEST_KIND_INITIALIZATION,
+    PERFTEST_KIND_FINALIZATION
+};
+
+@transfer_mode(SHMEM_REF)
+struct PerftestType {
+    long              sequence_number;
+    PerftestKind      kind;
+    unsigned long long timestamp_us;
+    octet             bin_data[PERFTEST_TYPE_MAX_PAYLOAD];
+};

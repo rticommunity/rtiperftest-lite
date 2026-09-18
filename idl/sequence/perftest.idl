@@ -1,0 +1,33 @@
+/*
+ * Copyright (c) 2026 Real-Time Innovations, Inc.
+ * Subject to the Eclipse Public License v1.0; see LICENSE.md for details.
+ */
+
+/*
+ * Perftest Lite IDL - sequence-based variant.
+ *
+ * Uses a bounded sequence for bin_data. Compatible with UDPv4 and SHMEM
+ * transports. Not compatible with Micro Zero Copy v2 (which requires
+ * fixed arrays only).
+ */
+
+#ifndef PERFTEST_TYPE_CONFIGURED_MAX_PAYLOAD
+#define PERFTEST_TYPE_CONFIGURED_MAX_PAYLOAD 64000
+#endif
+const long PERFTEST_TYPE_OVERHEAD = 28;
+const long PERFTEST_TYPE_MAX_PAYLOAD =
+    PERFTEST_TYPE_CONFIGURED_MAX_PAYLOAD;
+
+enum PerftestKind {
+    PERFTEST_KIND_DATA,
+    PERFTEST_KIND_DATA_PING,
+    PERFTEST_KIND_INITIALIZATION,
+    PERFTEST_KIND_FINALIZATION
+};
+
+struct PerftestType {
+    long              sequence_number;
+    PerftestKind      kind;
+    unsigned long long timestamp_us;
+    sequence<octet, PERFTEST_TYPE_MAX_PAYLOAD> bin_data;
+};
