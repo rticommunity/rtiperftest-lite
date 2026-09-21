@@ -1,1 +1,13 @@
-/build/
+build/
+build*
+.copilot/
+.venv/
+.vscode/
+test/__pycache__/
+
+# Locally generated benchmark data and diagnostics
+results/
+*.log
+*.pcap
+*.pyc
+__pycache__/
