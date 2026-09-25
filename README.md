@@ -151,6 +151,10 @@ for the complete target and linking details.
 See the [porting guide](doc/porting-guide.md) for the complete platform,
 middleware, and type-variant integration details.
 
+For agent-assisted custom ports, use the [port-perftest-lite skill](.agents/skills/port-perftest-lite/SKILL.md).
+If your assistant does not discover `.agents/skills/`, point it to that file
+or install the skill in its supported skills directory.
+
 To port to a new OS:
 
 1. Add `src/os/os_<platform>.c` implementing the
