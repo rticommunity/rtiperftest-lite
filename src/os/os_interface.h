@@ -32,9 +32,9 @@
  * OS backend selector.
  *
  * Exactly one of the PERFTEST_LITE_OS_* macros must be defined. Each
- * backend implementation file (os_linux.c, os_forge.c, os_qnx.c, ...)
+ * backend implementation file 
  * gates its own body on the matching macro so that a build system that
- * compiles every os_*.c (e.g. Forge's auto-glob) still produces a single
+ * compiles every os_*.c still produces a single
  * definition of perftest_lite_os_get().
  *
  * If nothing is defined, default to Linux to keep the host build working.

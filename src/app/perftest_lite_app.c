@@ -8,7 +8,7 @@
  *
  * Always defines `emain(argc, argv)` so it can be reused by:
  *   - The Linux/host build: a thin `main()` shim below forwards to emain.
- *   - The Forge / substrate build: the platform-provided `main()` (e.g. the
+ *   - The RTI infrastructure build: the platform-provided `main()` (e.g. the
  *     embedded startup task) calls `emain()` directly.
  */
 #include <stddef.h>
