@@ -20,7 +20,7 @@ The project currently provides:
 - UDPv4 in every build; optional serialized SHMEM for sequence builds and Zero Copy v2 for zcopy builds.
 - DPSE discovery by default and an opt-in DPDE build.
 - Separate publisher and subscriber executables and static libraries.
-- Linux and QNX OS adapters.
+- Linux OS adapter.
 
 It is not the same product as RTI Perftest. Perftest Lite has a deliberately narrower topology and build-time feature set.
 

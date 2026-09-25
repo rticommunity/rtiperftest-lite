@@ -6,10 +6,10 @@ Perftest Lite is intended to be straightforward to adapt to a new platform.
 This guide describes the public integration path for users who need to build
 Perftest Lite for a specific embedded or hosted platform.
 
-The repository already provides CMake build paths and OS adapters for Linux and
-QNX. Start with [Building](building.md) when either platform matches the target.
-For another platform, use the steps below to add the required OS, toolchain,
-and RTI Connext DDS Micro integration. A new port is not a supported platform
+The repository provides a CMake build path and OS adapter for Linux. Start with
+[Building](building.md) when Linux matches the target. For another platform,
+use the steps below to add the required OS, toolchain, and RTI Connext DDS
+Micro integration. A new port is not a supported platform
 claim until it has passed the validation checklist in this document.
 
 ## Choose an integration path
@@ -19,7 +19,6 @@ Use the path that matches the target:
 | Target | Starting point | Work required |
 | --- | --- | --- |
 | Linux | Existing CMake configuration | Set the RTI installation and target-library variables. |
-| QNX | Existing CMake configuration with `PERFTEST_LITE_OS=qnx` | Provide the QNX compiler environment and matching RTI target libraries. |
 | Other hosted OS | Existing CMake configuration as a reference | Add an OS adapter, platform compile definitions, and link libraries. |
 | Embedded or RTOS application | Public source and C API | Integrate one role into the application, provide platform services, generate the DDS type, and link the selected RTI libraries. |
 
@@ -277,7 +276,7 @@ Add the adapter to the target build system, define
 only the platform libraries required by that target. Define
 `PERFTEST_LITE_PLATFORM_CONFIG_HEADER` as a quoted header name when the port
 needs to provide output hooks or defaults before `perftest_lite_config.h`
-applies its fallbacks. The Linux, QNX, and FreeRTOS/lwIP adapters are working
+applies its fallbacks. The Linux and FreeRTOS/lwIP adapters are working
 examples of this boundary; they are not a requirement to use their specific
 APIs or toolchains.
 

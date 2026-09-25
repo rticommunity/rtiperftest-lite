@@ -1,17 +1,15 @@
 # Building Perftest Lite
 
-CMake is used to configure and build Perftest Lite for the supported
-general-purpose operating systems: Linux and QNX. This section shows direct
-CMake configurations for common transport and memory choices. If you want to
+CMake is used to configure and build Perftest Lite for Linux. This section
+shows direct CMake configurations for common transport and memory choices. If you want to
 build for another operating system, see the [porting guide](porting-guide.md)
 for the required OS adapter, toolchain, and platform-library integration steps.
 
 ## CMake configuration
 
-Users can define their own CMake configuration for Linux, QNX, or another
-supported platform. The build configuration is selected at compile time through
-the variables below. `RTIMEHOME`, `RTIME_TARGET_NAME`, and `RTIME_TARGET_PSL`
-are required.
+The provided CMake configuration targets Linux. Build settings are selected
+at compile time through the variables below. `RTIMEHOME`, `RTIME_TARGET_NAME`,
+and `RTIME_TARGET_PSL` are required.
 
 | Variable | Purpose |
 | --- | --- |
@@ -26,18 +24,6 @@ installation and target names for your platform:
 RTIMEHOME=/path/to/rti_connext_dds_micro-4.3.0
 RTIME_TARGET_NAME=x86_64leElfgcc13.3.0
 RTIME_TARGET_PSL=x86_64leElfgcc13.3.0-Linux6
-```
-
-For QNX, use the same configuration and set `PERFTEST_LITE_OS=qnx`, together with
-the appropriate QNX target names and compiler environment:
-
-```bash
-cmake -S . -B build-qnx \
-  -DRTIMEHOME=/path/to/rti_connext_dds_micro-4.3.0 \
-  -DRTIME_TARGET_NAME=armv8leElfqnx_qcc8.3.0 \
-  -DRTIME_TARGET_PSL=armv8leElfqnx_qcc8.3.0-QNX7.1 \
-  -DPERFTEST_LITE_OS=qnx
-cmake --build build-qnx
 ```
 
 ## Build examples
@@ -160,7 +146,7 @@ role. Define both and compile both role sources to produce one binary where
 
 | CMake setting | Default | Meaning |
 | --- | --- | --- |
-| `PERFTEST_LITE_OS` | `linux` | `linux` or `qnx`. |
+| `PERFTEST_LITE_OS` | `linux` | `linux`. |
 | `PERFTEST_LITE_MIDDLEWARE` | `micro` | The current RTI Connext DDS backend. Future backends can use this selection. |
 | `PERFTEST_LITE_TYPE` | `sequence` | `sequence` or `zcopy`. |
 | `PERFTEST_LITE_SEQUENCE_MAX_PAYLOAD_BYTES` | `64000` | Maximum sequence payload bytes. |
