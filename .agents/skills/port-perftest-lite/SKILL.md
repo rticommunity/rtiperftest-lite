@@ -1,19 +1,19 @@
 ---
 name: port-perftest-lite
-description: "Use when porting or integrating Perftest Lite into an embedded OS, RTOS, BSP, vendor IDE, custom CMake project, or non-Foundry build, including FreeRTOS and lwIP targets."
+description: "Use when porting or integrating Perftest Lite into an embedded OS, RTOS, BSP, vendor IDE, or custom CMake project, including FreeRTOS and lwIP targets."
 ---
 
 # Port Perftest Lite
 
-Integrate one Perftest Lite role into a user-owned target without relying on
-Foundry. Treat `doc/porting-guide.md` as authoritative and use
+Integrate one Perftest Lite role into a user-owned target. Treat
+`doc/porting-guide.md` as authoritative and use
 `examples/embedded/freertos_lwip/` as the reference implementation when its
 assumptions match the target.
 
 ## Guardrails
 
-- Do not introduce Foundry, Hammer, Substrate, `FORGE_*`, generated Foundry
-   headers, or the `emain()` convention into a user port.
+- Use the documented platform interface and application entry point; do not
+   depend on internal build infrastructure or generated platform headers.
 - Prefer RTI OSAPI for sleep, semaphores, heap, and other OS services when it
   provides an equivalent API.
 - Do not guess compiler names, RTI target directory names, RTI OS definitions,

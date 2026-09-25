@@ -429,6 +429,7 @@ PerftestLiteRetcode perftest_lite_publisher(const PerftestLiteInputArgs *args,
     }
 
     T->destroy(sample);
+    PERFTEST_LITE_PRINT("=== Perftest Lite Round Final ===\n");
     mw->shutdown(mw);
     if (ctx.latency_log_fp) {
         fclose(ctx.latency_log_fp);

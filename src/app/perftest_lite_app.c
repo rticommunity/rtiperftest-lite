@@ -15,21 +15,23 @@
 
 #include "../core/perftest_lite.h"
 
-#ifndef PERFTEST_LITE_USE_FORGE
+#ifndef PERFTEST_LITE_USE_RTI_INFRA
 int emain(int argc, char **argv)
 {
     return perftest_lite_main_cli(argc, argv);
 }
 #else
-int emain(int argc __attribute__((unused)), char **argv __attribute__((unused)))
+int emain(int argc, char **argv)
 {
+    (void)argc;
+    (void)argv;
     return perftest_lite_main_cli(0, NULL);
 }
 #endif
 
 /* Host main() shim. Compiled out on substrate builds, where the platform
  * provides main() and calls emain() itself (e.g. from the embedded startup task). */
-#ifndef PERFTEST_LITE_USE_FORGE
+#ifndef PERFTEST_LITE_USE_RTI_INFRA
 int main(int argc, char **argv)
 {
     return emain(argc, argv);

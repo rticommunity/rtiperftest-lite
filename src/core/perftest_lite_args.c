@@ -43,7 +43,7 @@ static int parse_int32_option(const char *opt, const char *text,
     value = strtol(text, &end, 0);
     if (errno != 0 || end == text || *end != '\0'
         || value < min_value || value > max_value) {
-        PERFTEST_LITE_PRINT(
+        PERFTEST_LITE_ERROR(
             "invalid value for %s: '%s' (expected %d..%d)\n",
             opt, text, min_value, max_value);
         return PERFTEST_LITE_PARSE_ERROR;
@@ -129,7 +129,7 @@ void perftest_lite_print_help(const char *appname)
 
 #define NEED_ARG(i, argc, opt) \
     do { if ((i)+1 >= (argc)) { \
-        PERFTEST_LITE_PRINT("missing value for %s\n", (opt)); return -1; \
+        PERFTEST_LITE_ERROR("missing value for %s\n", (opt)); return -1; \
     } } while (0)
 
 int perftest_lite_parse_arguments(int argc, char **argv,
@@ -178,7 +178,7 @@ int perftest_lite_parse_arguments(int argc, char **argv,
                 return PERFTEST_LITE_PARSE_ERROR;
             }
             if (value == 0) {
-                PERFTEST_LITE_PRINT(
+                PERFTEST_LITE_ERROR(
                     "invalid value for %s: '0' (expected -1 or 1..%d)\n",
                     opt, INT32_MAX);
                 return PERFTEST_LITE_PARSE_ERROR;
@@ -207,7 +207,7 @@ int perftest_lite_parse_arguments(int argc, char **argv,
         else if (!strcmp(opt, "-noPrintConfig")){ args->print_config = 0; }
         else if (!strcmp(opt, "-latencyStream")) { args->latency_stream = 1; }
         else {
-            PERFTEST_LITE_PRINT("unknown option: %s\n", opt);
+            PERFTEST_LITE_ERROR("unknown option: %s\n", opt);
             return PERFTEST_LITE_PARSE_ERROR;
         }
     }

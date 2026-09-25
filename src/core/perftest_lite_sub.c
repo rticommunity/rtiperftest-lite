@@ -224,6 +224,7 @@ PerftestLiteRetcode perftest_lite_subscriber(const PerftestLiteInputArgs *args,
 
     }
 
+    PERFTEST_LITE_PRINT("=== Perftest Lite Round Final ===\n");
     mw->shutdown(mw);
     return PERFTEST_LITE_OK;
 }

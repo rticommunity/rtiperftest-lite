@@ -21,7 +21,7 @@ PerftestLiteRetcode perftest_lite_main(const PerftestLiteInputArgs *args,
     if (!args) return PERFTEST_LITE_ERR_BAD_ARGS;
     type_iface = perftest_lite_type_get();
     if (!type_iface || !type_iface->validate_input) {
-        PERFTEST_LITE_PRINT("[err] selected type does not support input validation\n");
+        PERFTEST_LITE_ERROR("selected type does not support input validation\n");
         return PERFTEST_LITE_ERR_BAD_ARGS;
     }
     if (type_iface->validate_input(args) != 0) {
@@ -38,14 +38,14 @@ PerftestLiteRetcode perftest_lite_main(const PerftestLiteInputArgs *args,
 #if defined(PERFTEST_LITE_BUILD_PUB) && PERFTEST_LITE_BUILD_PUB
         return perftest_lite_publisher(args, results);
 #else
-        PERFTEST_LITE_PRINT("[err] this binary was built without publisher support\n");
+        PERFTEST_LITE_ERROR("this binary was built without publisher support\n");
         return PERFTEST_LITE_ERR_BAD_ARGS;
 #endif
     }
 #if defined(PERFTEST_LITE_BUILD_SUB) && PERFTEST_LITE_BUILD_SUB
     return perftest_lite_subscriber(args, results);
 #else
-    PERFTEST_LITE_PRINT("[err] this binary was built without subscriber support\n");
+    PERFTEST_LITE_ERROR("this binary was built without subscriber support\n");
     return PERFTEST_LITE_ERR_BAD_ARGS;
 #endif
 }

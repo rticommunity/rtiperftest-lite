@@ -43,7 +43,7 @@
 #if !defined(PERFTEST_LITE_OS_LINUX)    \
  && !defined(PERFTEST_LITE_OS_QNX)      \
  && !defined(PERFTEST_LITE_OS_AUTOSAR)  \
- && !defined(PERFTEST_LITE_OS_FORGE)    \
+ && !defined(PERFTEST_LITE_OS_RTI_INFRA) \
  && !defined(PERFTEST_LITE_OS_CUSTOM)
 #  define PERFTEST_LITE_OS_LINUX 1
 #endif

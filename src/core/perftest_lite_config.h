@@ -21,6 +21,7 @@
 #  include PERFTEST_LITE_PLATFORM_CONFIG_HEADER
 #endif
 
+
 /*
  * Default network interface fallback. Platform/profile/toolchain defines can
  * set DEFAULT_NETWORK_INTERFACE before this header is parsed.
@@ -61,7 +62,7 @@
 #endif
 
 #ifndef PERFTEST_LITE_DEFAULT_NIC
-#  if defined(PERFTEST_LITE_OS_FORGE)
+#  if defined(PERFTEST_LITE_OS_RTI_INFRA)
 #    include "netconfig.h"  /* defines DEFAULT_NETWORK_INTERFACE as a string literal */
 #    define PERFTEST_LITE_DEFAULT_NIC DEFAULT_NETWORK_INTERFACE
 #  elif defined(DEFAULT_NETWORK_INTERFACE)
@@ -133,6 +134,42 @@
 #define PERFTEST_LITE_PONG_DR_KEY 201
 
 /* ---- DDS resource limits (tweak per platform) -------------------------- */
+#ifndef PERFTEST_LITE_MAX_DESTINATION_PORTS
+#  define PERFTEST_LITE_MAX_DESTINATION_PORTS 8
+#endif
+
+#ifndef PERFTEST_LITE_MAX_RECEIVE_PORTS
+#  define PERFTEST_LITE_MAX_RECEIVE_PORTS 8
+#endif
+
+#ifndef PERFTEST_LITE_LOCAL_TOPIC_ALLOCATION
+#  define PERFTEST_LITE_LOCAL_TOPIC_ALLOCATION 4
+#endif
+
+#ifndef PERFTEST_LITE_LOCAL_TYPE_ALLOCATION
+#  define PERFTEST_LITE_LOCAL_TYPE_ALLOCATION 2
+#endif
+
+#ifndef PERFTEST_LITE_LOCAL_READER_ALLOCATION
+#  define PERFTEST_LITE_LOCAL_READER_ALLOCATION 4
+#endif
+
+#ifndef PERFTEST_LITE_LOCAL_WRITER_ALLOCATION
+#  define PERFTEST_LITE_LOCAL_WRITER_ALLOCATION 4
+#endif
+
+#ifndef PERFTEST_LITE_REMOTE_PARTICIPANT_ALLOCATION
+#  define PERFTEST_LITE_REMOTE_PARTICIPANT_ALLOCATION 4
+#endif
+
+#ifndef PERFTEST_LITE_REMOTE_READER_ALLOCATION
+#  define PERFTEST_LITE_REMOTE_READER_ALLOCATION 8
+#endif
+
+#ifndef PERFTEST_LITE_REMOTE_WRITER_ALLOCATION
+#  define PERFTEST_LITE_REMOTE_WRITER_ALLOCATION 8
+#endif
+
 #ifndef PERFTEST_LITE_UDP_MAX_MESSAGE_SIZE
 #  define PERFTEST_LITE_UDP_MAX_MESSAGE_SIZE      65507
 #endif
@@ -246,14 +283,27 @@
 #endif
 
 /* ---- Print macro: redefine for embedded targets without printf -------- */
-#ifndef PERFTEST_LITE_PRINT
-#  if defined(PERFTEST_LITE_USE_FORGE)
-     /* Substrate / Forge: route through hammer's UART-prefixed printer. */
-#    include "FORGE_Stdio.h"
-#    define PERFTEST_LITE_PRINT(...) FORGE_Stdio_printf_stderr(__VA_ARGS__)
-#  else
-#    include <stdio.h>
+#if defined(PERFTEST_LITE_USE_RTI_INFRA)
+#  include "FORGE_Stdio.h"
+#  ifndef PERFTEST_LITE_PRINT
+#    define PERFTEST_LITE_PRINT(...) FORGE_Stdio_printf(__VA_ARGS__)
+#  endif
+#  ifndef PERFTEST_LITE_ERROR
+#    define PERFTEST_LITE_ERROR(...) FORGE_Stdio_printf_stderr(__VA_ARGS__)
+#  endif
+#else
+#  include <stdio.h>
+#  if defined(PERFTEST_LITE_OS_LINUX) && !defined(PERFTEST_LITE_PRINT) \
+      && !defined(PERFTEST_LITE_ERROR)
+#    define PERFTEST_LITE_ERROR(...) \
+     do { fprintf(stderr, "[err] "); fprintf(stderr, __VA_ARGS__); } while (0)
+#  endif
+#  ifndef PERFTEST_LITE_PRINT
 #    define PERFTEST_LITE_PRINT(...) printf(__VA_ARGS__)
+#  endif
+#  ifndef PERFTEST_LITE_ERROR
+#    define PERFTEST_LITE_ERROR(...) \
+     do { PERFTEST_LITE_PRINT("[err] "); PERFTEST_LITE_PRINT(__VA_ARGS__); } while (0)
 #  endif
 #endif
 

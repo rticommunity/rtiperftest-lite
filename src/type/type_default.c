@@ -48,8 +48,8 @@ static int32_t type_default_sample_size(void)
 
 static void type_print_input_error(void)
 {
-    PERFTEST_LITE_PRINT(
-        "[err] input is not supported by the selected type "
+    PERFTEST_LITE_ERROR(
+        "input is not supported by the selected type "
         "(-datalen must be %d..%d bytes; compiled payload maximum is %d)\n",
         (int) PERFTEST_TYPE_OVERHEAD,
         (int) (PERFTEST_TYPE_OVERHEAD + PERFTEST_TYPE_MAX_PAYLOAD),

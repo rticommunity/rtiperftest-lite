@@ -56,8 +56,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define PLITE_LOG(...) PERFTEST_LITE_PRINT(__VA_ARGS__)
-
 typedef struct {
     PerftestLiteMiddleware                base;  /* MUST be first */
     const PerftestLiteMiddlewareConfig   *cfg;
@@ -92,19 +90,6 @@ typedef struct {
 /* -------------------------------------------------------------------- */
 /*  Listener trampolines                                                */
 /* -------------------------------------------------------------------- */
-
-/* Reserved for middlewares that report writer-side matches separately
- * (Pro, etc.). Currently unused with Micro. */
-__attribute__((unused))
-static void on_pub_matched(void *l, DDS_DataWriter *w,
-                           const struct DDS_PublicationMatchedStatus *s)
-{
-    (void)w;
-    MicroReader *self = (MicroReader *)l; /* shared by writer/reader */
-    if (!self || !self->listener.on_publication_matched) return;
-    self->listener.on_publication_matched(self->listener.user_data,
-                                          s->current_count_change);
-}
 
 static void on_sub_matched(void *l, DDS_DataReader *r,
                            const struct DDS_SubscriptionMatchedStatus *s)
@@ -193,17 +178,17 @@ static int micro_writer_write_zcopy(PerftestLiteWriter *base,
         return -1;
     }
     if (rc != DDS_RETCODE_OK) {
-        PLITE_LOG("[mw] get_loan failed: %d\n", rc);
+        PERFTEST_LITE_ERROR("[mw] get_loan failed: %d\n", rc);
         return -1;
     }
     if (w->type_iface->copy_for_write((PerftestSample *)loaned, sample) != 0) {
-        PLITE_LOG("[mw] failed to copy loaned sample\n");
+        PERFTEST_LITE_ERROR("[mw] failed to copy loaned sample\n");
         goto discard_loan;
     }
 
     rc = PerftestTypeDataWriter_write(w->tdw, loaned, &DDS_HANDLE_NIL);
     if (rc != DDS_RETCODE_OK) {
-        PLITE_LOG("[mw] zcopy write failed: %d\n", rc);
+        PERFTEST_LITE_ERROR("[mw] zcopy write failed: %d\n", rc);
         goto discard_loan;
     }
     return 0;
@@ -211,7 +196,7 @@ static int micro_writer_write_zcopy(PerftestLiteWriter *base,
 discard_loan:
     rc = DDS_DataWriter_discard_loan(w->dw, loaned);
     if (rc != DDS_RETCODE_OK) {
-        PLITE_LOG("[mw] discard_loan failed: %d\n", rc);
+        PERFTEST_LITE_ERROR("[mw] discard_loan failed: %d\n", rc);
     }
     return -1;
 }
@@ -285,7 +270,7 @@ static RTI_BOOL configure_udp(MicroMW *self, RT_Registry_T *registry)
             if (!UDP_InterfaceTable_add_entry(&p->if_table,
                     addr_host, mask_host, self->cfg->nic,
                     UDP_INTERFACE_INTERFACE_UP_FLAG)) {
-                PLITE_LOG("[mw] failed to add udp if_table entry\n");
+                PERFTEST_LITE_ERROR("[mw] failed to add udp if_table entry\n");
                 return RTI_FALSE;
             }
         }
@@ -298,7 +283,7 @@ static RTI_BOOL configure_udp(MicroMW *self, RT_Registry_T *registry)
     if (!RT_Registry_register(registry, NETIO_DEFAULT_UDP_NAME,
             UDP_InterfaceFactory_get_interface(),
             (struct RT_ComponentFactoryProperty *)p, NULL)) {
-        PLITE_LOG("[mw] failed to register udp\n");
+        PERFTEST_LITE_ERROR("[mw] failed to register udp\n");
         return RTI_FALSE;
     }
     return RTI_TRUE;
@@ -412,7 +397,7 @@ static RTI_BOOL configure_shmem(RT_Registry_T *registry)
     if (!RT_Registry_register(registry, NETIO_DEFAULT_SHMEM_NAME,
             NETIO_SHMEMInterfaceFactory_get_interface(),
             (struct RT_ComponentFactoryProperty *)property, NULL)) {
-        PLITE_LOG("[mw] failed to register shmem\n");
+        PERFTEST_LITE_ERROR("[mw] failed to register shmem\n");
         OSAPI_Heap_free_struct(property);
         return RTI_FALSE;
     }
@@ -426,7 +411,7 @@ static RTI_BOOL configure_shmem_qos(
     char **str_ref;
 
     if (self->cfg->peer && self->cfg->peer[0]) {
-        PLITE_LOG("[mw] WARNING: -peer is ignored for SHMEM; using _shmem://\n");
+        PERFTEST_LITE_PRINT("[WARN] [mw] -peer is ignored for SHMEM; using _shmem://\n");
     }
     if (!DDS_StringSeq_set_maximum(&qos->transports.enabled_transports, 1)
         || !DDS_StringSeq_set_length(&qos->transports.enabled_transports, 1)
@@ -460,7 +445,7 @@ static RTI_BOOL configure_zerocopy(
     struct ZCOPY_NotifInterfaceFactoryProperty *notif_prop;
 
     if (!NDDS_Transport_ZeroCopy_initialize(registry, NULL, NULL)) {
-        PLITE_LOG("[mw] NDDS_Transport_ZeroCopy_initialize failed\n");
+        PERFTEST_LITE_ERROR("[mw] NDDS_Transport_ZeroCopy_initialize failed\n");
         return RTI_FALSE;
     }
 
@@ -486,7 +471,7 @@ static RTI_BOOL configure_zerocopy(
 
     if (!ZCOPY_NotifMechanism_register(registry, NETIO_DEFAULT_NOTIF_NAME,
                                         notif_prop)) {
-        PLITE_LOG("[mw] ZCOPY_NotifMechanism_register failed\n");
+        PERFTEST_LITE_ERROR("[mw] ZCOPY_NotifMechanism_register failed\n");
         OSAPI_Heap_free_struct(notif_prop);
         OSAPI_Heap_free_struct(notif_mech);
         return RTI_FALSE;
@@ -545,24 +530,24 @@ static int micro_init(PerftestLiteMiddleware *base,
 #if defined(PERFTEST_LITE_HAS_MICRO_SHMEM) && !defined(PERFTEST_LITE_TYPE_ZCOPY)
             self->is_shmem = 1;
 #elif defined(PERFTEST_LITE_TYPE_ZCOPY)
-            PLITE_LOG("[mw] -transport SHMEM requires PERFTEST_LITE_TYPE=sequence\n");
+            PERFTEST_LITE_ERROR("[mw] -transport SHMEM requires PERFTEST_LITE_TYPE=sequence\n");
             return -1;
 #else
-            PLITE_LOG("[mw] -transport SHMEM is not compiled in\n");
+            PERFTEST_LITE_ERROR("[mw] -transport SHMEM is not compiled in\n");
             return -1;
 #endif
         } else if (strcmp(cfg->transport_id, "ZeroCopy") == 0) {
 #if defined(PERFTEST_LITE_HAS_MICRO_ZEROCOPY) && defined(PERFTEST_LITE_TYPE_ZCOPY)
             self->is_zerocopy = 1;
 #elif defined(PERFTEST_LITE_HAS_MICRO_ZEROCOPY)
-            PLITE_LOG("[mw] -transport ZeroCopy requires PERFTEST_LITE_TYPE=zcopy\n");
+            PERFTEST_LITE_ERROR("[mw] -transport ZeroCopy requires PERFTEST_LITE_TYPE=zcopy\n");
             return -1;
 #else
-            PLITE_LOG("[mw] -transport ZeroCopy is not compiled in\n");
+            PERFTEST_LITE_ERROR("[mw] -transport ZeroCopy is not compiled in\n");
             return -1;
 #endif
         } else {
-            PLITE_LOG("[mw] transport '%s' not supported\n", cfg->transport_id);
+            PERFTEST_LITE_ERROR("[mw] transport '%s' not supported\n", cfg->transport_id);
             return -1;
         }
     }
@@ -573,14 +558,14 @@ static int micro_init(PerftestLiteMiddleware *base,
 
     /* Verbose logging while we are setting up; helps diagnose port issues. */
     OSAPI_Log_set_verbosity(OSAPI_LOG_VERBOSITY_WARNING);
-
+    
     if (!RT_Registry_register(registry, DDSHST_WRITER_DEFAULT_HISTORY_NAME,
             WHSM_HistoryFactory_get_interface(), NULL, NULL)) {
-        PLITE_LOG("[mw] failed to register wh\n"); return -1;
+        PERFTEST_LITE_ERROR("[mw] failed to register wh\n"); return -1;
     }
     if (!RT_Registry_register(registry, DDSHST_READER_DEFAULT_HISTORY_NAME,
             RHSM_HistoryFactory_get_interface(), NULL, NULL)) {
-        PLITE_LOG("[mw] failed to register rh\n"); return -1;
+        PERFTEST_LITE_ERROR("[mw] failed to register rh\n"); return -1;
     }
 
     if (!configure_udp(self, registry)) {
@@ -600,10 +585,10 @@ static int micro_init(PerftestLiteMiddleware *base,
 
 #ifdef RTI_DPSE
     if (!configure_dpse(registry, &dp_qos)) {
-        PLITE_LOG("[mw] failed to configure dpse\n");
+        PERFTEST_LITE_ERROR("[mw] failed to configure dpse\n");
 #else
     if (!configure_dpde(registry, &dp_qos)) {
-        PLITE_LOG("[mw] failed to configure dpde\n");
+        PERFTEST_LITE_ERROR("[mw] failed to configure dpde\n");
 #endif
         DDS_DomainParticipantQos_finalize(&dp_qos);
         return -1;
@@ -611,14 +596,14 @@ static int micro_init(PerftestLiteMiddleware *base,
 
 #ifdef PERFTEST_LITE_HAS_MICRO_SHMEM
     if (self->is_shmem && !configure_shmem_qos(self, &dp_qos)) {
-        PLITE_LOG("[mw] failed to configure SHMEM QoS\n");
+        PERFTEST_LITE_ERROR("[mw] failed to configure SHMEM QoS\n");
         DDS_DomainParticipantQos_finalize(&dp_qos);
         return -1;
     }
 #endif
 #ifdef PERFTEST_LITE_HAS_MICRO_ZEROCOPY
     if (self->is_zerocopy && !configure_zerocopy_qos(&dp_qos)) {
-        PLITE_LOG("[mw] failed to configure Zero Copy QoS\n");
+        PERFTEST_LITE_ERROR("[mw] failed to configure Zero Copy QoS\n");
         DDS_DomainParticipantQos_finalize(&dp_qos);
         return -1;
     }
@@ -630,15 +615,23 @@ static int micro_init(PerftestLiteMiddleware *base,
             DDS_String_dup(cfg->peer);
     }
 
-    dp_qos.resource_limits.max_destination_ports = 8;
-    dp_qos.resource_limits.max_receive_ports     = 8;
-    dp_qos.resource_limits.local_topic_allocation  = 4;
-    dp_qos.resource_limits.local_type_allocation   = 2;
-    dp_qos.resource_limits.local_reader_allocation = 4;
-    dp_qos.resource_limits.local_writer_allocation = 4;
-    dp_qos.resource_limits.remote_participant_allocation = 4;
-    dp_qos.resource_limits.remote_reader_allocation      = 8;
-    dp_qos.resource_limits.remote_writer_allocation      = 8;
+    dp_qos.resource_limits.max_destination_ports =
+        PERFTEST_LITE_MAX_DESTINATION_PORTS;
+    dp_qos.resource_limits.max_receive_ports = PERFTEST_LITE_MAX_RECEIVE_PORTS;
+    dp_qos.resource_limits.local_topic_allocation =
+        PERFTEST_LITE_LOCAL_TOPIC_ALLOCATION;
+    dp_qos.resource_limits.local_type_allocation =
+        PERFTEST_LITE_LOCAL_TYPE_ALLOCATION;
+    dp_qos.resource_limits.local_reader_allocation =
+        PERFTEST_LITE_LOCAL_READER_ALLOCATION;
+    dp_qos.resource_limits.local_writer_allocation =
+        PERFTEST_LITE_LOCAL_WRITER_ALLOCATION;
+    dp_qos.resource_limits.remote_participant_allocation =
+        PERFTEST_LITE_REMOTE_PARTICIPANT_ALLOCATION;
+    dp_qos.resource_limits.remote_reader_allocation =
+        PERFTEST_LITE_REMOTE_READER_ALLOCATION;
+    dp_qos.resource_limits.remote_writer_allocation =
+        PERFTEST_LITE_REMOTE_WRITER_ALLOCATION;
 
     DDS_EntityNameQosPolicy_set_name(&dp_qos.participant_name,
         cfg->participant_name);
@@ -648,7 +641,7 @@ static int micro_init(PerftestLiteMiddleware *base,
         self->factory, cfg->domain_id, &dp_qos, NULL, DDS_STATUS_MASK_NONE);
     DDS_DomainParticipantQos_finalize(&dp_qos);
     if (!self->participant) {
-        PLITE_LOG("[mw] failed to create participant\n");
+        PERFTEST_LITE_ERROR("[mw] failed to create participant\n");
         return -1;
     }
 
@@ -656,14 +649,14 @@ static int micro_init(PerftestLiteMiddleware *base,
     if (!cfg->remote_participant_name
         || DPSE_RemoteParticipant_assert(self->participant,
                cfg->remote_participant_name) != DDS_RETCODE_OK) {
-        PLITE_LOG("[mw] failed to assert remote participant\n");
+        PERFTEST_LITE_ERROR("[mw] failed to assert remote participant\n");
         return -1;
     }
 #endif
 
     if (PerftestTypeTypeSupport_register_type(self->participant,
             cfg->type_iface->type_name()) != DDS_RETCODE_OK) {
-        PLITE_LOG("[mw] failed to register type\n");
+        PERFTEST_LITE_ERROR("[mw] failed to register type\n");
         return -1;
     }
 
@@ -674,7 +667,7 @@ static int micro_init(PerftestLiteMiddleware *base,
         PERFTEST_LITE_PONG_TOPIC_NAME, cfg->type_iface->type_name(),
         &DDS_TOPIC_QOS_DEFAULT, NULL, DDS_STATUS_MASK_NONE);
     if (!self->ping_topic || !self->pong_topic) {
-        PLITE_LOG("[mw] failed to create topics\n");
+        PERFTEST_LITE_ERROR("[mw] failed to create topics\n");
         return -1;
     }
 
@@ -683,7 +676,7 @@ static int micro_init(PerftestLiteMiddleware *base,
     self->subscriber = DDS_DomainParticipant_create_subscriber(self->participant,
         &DDS_SUBSCRIBER_QOS_DEFAULT, NULL, DDS_STATUS_MASK_NONE);
     if (!self->publisher || !self->subscriber) {
-        PLITE_LOG("[mw] failed to create pub/sub\n");
+        PERFTEST_LITE_ERROR("[mw] failed to create pub/sub\n");
         return -1;
     }
 
@@ -762,7 +755,7 @@ static PerftestLiteWriter *micro_create_writer(PerftestLiteMiddleware *base,
 
 #ifdef RTI_DPSE
     if (!assert_remote_subscription(self, topic_name, &qos)) {
-        PLITE_LOG("[mw] failed to assert remote subscription for %s\n",
+        PERFTEST_LITE_ERROR("[mw] failed to assert remote subscription for %s\n",
                   topic_name);
         DDS_DataWriterQos_finalize(&qos);
         return NULL;
@@ -844,7 +837,7 @@ static PerftestLiteReader *micro_create_reader(PerftestLiteMiddleware *base,
 
 #ifdef RTI_DPSE
     if (!assert_remote_publication(self, topic_name, &qos)) {
-        PLITE_LOG("[mw] failed to assert remote publication for %s\n",
+        PERFTEST_LITE_ERROR("[mw] failed to assert remote publication for %s\n",
                   topic_name);
         DDS_DataReaderQos_finalize(&qos);
         OSAPI_Heap_free_struct(r);
