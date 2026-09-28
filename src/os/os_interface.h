@@ -32,7 +32,7 @@
  * OS backend selector.
  *
  * Exactly one of the PERFTEST_LITE_OS_* macros must be defined. Each
- * backend implementation file 
+ * backend implementation file (os_linux.c, os_qnx.c, etc.)
  * gates its own body on the matching macro so that a build system that
  * compiles every os_*.c still produces a single
  * definition of perftest_lite_os_get().

@@ -62,10 +62,7 @@
 #endif
 
 #ifndef PERFTEST_LITE_DEFAULT_NIC
-#  if defined(PERFTEST_LITE_OS_RTI_INFRA)
-#    include "netconfig.h"  /* defines DEFAULT_NETWORK_INTERFACE as a string literal */
-#    define PERFTEST_LITE_DEFAULT_NIC DEFAULT_NETWORK_INTERFACE
-#  elif defined(DEFAULT_NETWORK_INTERFACE)
+#  if defined(DEFAULT_NETWORK_INTERFACE)
 #    define PERFTEST_LITE_DEFAULT_NIC PERFTEST_LITE_STRINGIFY_VALUE(DEFAULT_NETWORK_INTERFACE)
 #  else
 #    define PERFTEST_LITE_DEFAULT_NIC "lo"
@@ -283,15 +280,7 @@
 #endif
 
 /* ---- Print macro: redefine for embedded targets without printf -------- */
-#if defined(PERFTEST_LITE_USE_RTI_INFRA)
-#  include "FORGE_Stdio.h"
-#  ifndef PERFTEST_LITE_PRINT
-#    define PERFTEST_LITE_PRINT(...) FORGE_Stdio_printf(__VA_ARGS__)
-#  endif
-#  ifndef PERFTEST_LITE_ERROR
-#    define PERFTEST_LITE_ERROR(...) FORGE_Stdio_printf_stderr(__VA_ARGS__)
-#  endif
-#else
+#if !defined(PERFTEST_LITE_PRINT) || !defined(PERFTEST_LITE_ERROR)
 #  include <stdio.h>
 #  if defined(PERFTEST_LITE_OS_LINUX) && !defined(PERFTEST_LITE_PRINT) \
       && !defined(PERFTEST_LITE_ERROR)

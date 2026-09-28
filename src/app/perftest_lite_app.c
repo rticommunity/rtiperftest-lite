@@ -8,8 +8,8 @@
  *
  * Always defines `emain(argc, argv)` so it can be reused by:
  *   - The Linux/host build: a thin `main()` shim below forwards to emain.
- *   - The RTI infrastructure build: the platform-provided `main()` (e.g. the
- *     embedded startup task) calls `emain()` directly.
+ *   - An embedded build: the platform-provided `main()` (e.g. the startup
+ *     task) calls `emain()` directly.
  */
 #include <stddef.h>
 
@@ -29,7 +29,7 @@ int emain(int argc, char **argv)
 }
 #endif
 
-/* Host main() shim. Compiled out on substrate builds, where the platform
+/* Host main() shim. Compiled out on embedded builds, where the platform
  * provides main() and calls emain() itself (e.g. from the embedded startup task). */
 #ifndef PERFTEST_LITE_USE_RTI_INFRA
 int main(int argc, char **argv)
