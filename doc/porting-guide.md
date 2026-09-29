@@ -114,10 +114,12 @@ hardware timer, or embedded memory constraints.
 ### AI-assisted porting
 
 The repository includes an optional
-[Perftest Lite porting skill](../.github/skills/port-perftest-lite/SKILL.md) for
-AI coding assistants that support repository skills. Ask the assistant to port
-or integrate Perftest Lite into the target RTOS, BSP, vendor project, or custom
-build. The skill guides the assistant through target discovery, OS adapter
+[Perftest Lite porting skill](../.agents/skills/port-perftest-lite/SKILL.md) for
+AI coding assistants that support repository skills. Add the skill to your
+agent's configuration before use; it may not discover repository skills by
+default. Ask the assistant to port or integrate Perftest Lite into the target
+RTOS, BSP, vendor project, or custom build. The skill guides the assistant
+through target discovery, OS adapter
 implementation, type generation, source and library selection, low-memory
 tuning, and staged validation.
 
